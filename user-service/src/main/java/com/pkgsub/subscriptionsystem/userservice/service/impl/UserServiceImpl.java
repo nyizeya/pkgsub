@@ -47,7 +47,6 @@ public class UserServiceImpl implements UserService {
                 .email(userCreateRequest.getEmail())
                 .encodedPassword(userCreateRequest.getPassword())
                 .role(AppUserRole.USER)
-                .createdAt(LocalDate.now())
                 .active(true)
                 .balance(new BigDecimal(10000))
                 .build();

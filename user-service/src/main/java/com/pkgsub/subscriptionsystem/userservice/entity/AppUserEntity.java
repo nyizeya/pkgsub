@@ -1,12 +1,13 @@
 package com.pkgsub.subscriptionsystem.userservice.entity;
 
+import com.pkgsub.subscriptionsystem.common.entity.audit.Auditable;
 import com.pkgsub.subscriptionsystem.common.enumerations.AppUserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -14,8 +15,9 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
-public class AppUserEntity implements Serializable {
+@Table(name = "app_users")
+@EntityListeners(AuditingEntityListener.class)
+public class AppUserEntity extends Auditable implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,9 +35,6 @@ public class AppUserEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppUserRole role;
-
-    @Column(nullable = false)
-    private LocalDate createdAt;
 
     @Column(nullable = false)
     private Boolean active;

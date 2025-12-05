@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableFeignClients
 @EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.pkgsub.subscriptionsystem")
 public class SubscriptionServiceApplication {
 
 	public static void main(String[] args) {
