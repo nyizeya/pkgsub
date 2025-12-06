@@ -1,6 +1,6 @@
 package com.pkgsub.subscriptionsystem.common.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionCreditRequest {
-    @NotNull(message = "User id cannot be null")
+    @NotEmpty(message = "User id cannot be empty")
     String userId;
 
-    @NotNull(message = "Package id cannot be null")
-    String packageId; // Must match PackageEntity's String ID
-    // Price and status are typically determined by the service, not the client
+    @NotEmpty(message = "Package id cannot be empty")
+    String packageId;
 }

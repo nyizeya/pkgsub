@@ -10,8 +10,8 @@ import lombok.Value;
 @Value
 @Builder
 public class SubscriptionDto {
-    Long id;
-    Long userId;
+    String id;
+    String userId;
     String packageId;
     BigDecimal amount;
     LocalDateTime createdAt;

@@ -1,5 +1,6 @@
 package com.pkgsub.subscriptionsystem.common.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserBalanceCreditRequest {
-    @NotNull(message = "User id cannot be null")
+    @NotEmpty(message = "User id cannot be empty")
     private String userId;
 
     @NotNull(message = "Credit amount cannot be null")

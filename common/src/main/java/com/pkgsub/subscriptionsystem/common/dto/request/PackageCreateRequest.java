@@ -1,5 +1,6 @@
 package com.pkgsub.subscriptionsystem.common.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -14,18 +15,18 @@ public class PackageCreateRequest {
 
     private String id;
 
-    @NotNull(message = "Package name cannot be null")
+    @NotEmpty(message = "Package name cannot be empty")
     private String name;
 
-    @NotNull(message = "Package opened date cannot be null")
+    @NotNull(message = "Package opened date cannot be empty")
     private LocalDate openedDate;
 
-    @NotNull(message = "Package closed date cannot be null")
+    @NotNull(message = "Package closed date cannot be empty")
     private LocalDate closedDate;
 
-    @NotNull(message = "Package seat count cannot be null")
+    @NotNull(message = "Package seat count cannot be empty")
     private Integer permittedCount;
 
-    @NotNull(message = "Package price cannot be null")
+    @NotNull(message = "Package price cannot be empty")
     private BigDecimal price;
 }

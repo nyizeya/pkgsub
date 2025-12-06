@@ -1,6 +1,6 @@
 package com.pkgsub.subscriptionsystem.common.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionRefundRequest {
-    @NotNull(message = "User id cannot be null")
-    private Long userId;
+    @NotEmpty(message = "User id cannot be empty")
+    private String userId;
 
-    @NotNull(message = "Subscription id cannot be null")
+    @NotEmpty(message = "Subscription id cannot be empty")
     private String subscriptionId;
 
-    @NotNull(message = "Package id cannot be null")
+    @NotEmpty(message = "Package id cannot be empty")
     private String packageId;
 }

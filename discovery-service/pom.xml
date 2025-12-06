@@ -13,7 +13,7 @@
 
 	<groupId>com.pkgsub.subscriptionsystem</groupId>
 	<artifactId>discovery-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>discovery-service</name>
 	<description>Discovery Service for pkgsub</description>
 

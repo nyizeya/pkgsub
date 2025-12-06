@@ -21,7 +21,7 @@ public class PackageResource {
     private final PackageService packageService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PackageDto>> createPackage(@RequestBody PackageCreateRequest dto) {
+    public ResponseEntity<ApiResponse<PackageDto>> createPackage(@Valid @RequestBody PackageCreateRequest dto) {
         PackageDto createdPackage = packageService.createPackage(dto);
         return new ResponseEntity<>(ApiResponse.of(HttpStatus.CREATED, null, createdPackage), HttpStatus.CREATED);
     }

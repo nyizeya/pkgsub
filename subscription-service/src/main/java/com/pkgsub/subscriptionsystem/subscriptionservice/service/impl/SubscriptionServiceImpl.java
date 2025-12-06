@@ -8,7 +8,7 @@ import com.pkgsub.subscriptionsystem.common.exceptions.EntityNotFoundException;
 import com.pkgsub.subscriptionsystem.common.exceptions.RefundException;
 import com.pkgsub.subscriptionsystem.common.exceptions.SubscriptionException;
 import com.pkgsub.subscriptionsystem.subscriptionservice.client.PackageClient;
-import com.pkgsub.subscriptionsystem.subscriptionservice.client.UserClient;
+import com.pkgsub.subscriptionsystem.subscriptionservice.client.BillingClient;
 import com.pkgsub.subscriptionsystem.subscriptionservice.entity.SubscriptionEntity;
 import com.pkgsub.subscriptionsystem.subscriptionservice.repository.SubscriptionRepository;
 import com.pkgsub.subscriptionsystem.subscriptionservice.service.SubscriptionService;
@@ -26,7 +26,7 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class SubscriptionServiceImpl implements SubscriptionService {
-    private final UserClient userClient;
+    private final BillingClient billingClient;
     private final PackageClient packageClient;
     private final SubscriptionMapper subscriptionMapper;
     private final SubscriptionRepository subscriptionRepository;
@@ -39,14 +39,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             validateSubscriptionAvailability(packageDto);
             validateSubscriptionWindow(packageDto);
 
-            userClient.debitFunds(new UserBalanceDebitRequest(subscriptionCreditRequest.getUserId(), packageDto.getPrice()));
+            billingClient.debitFunds(new UserBalanceDebitRequest(subscriptionCreditRequest.getUserId(), packageDto.getPrice()));
             packageClient.updatePackageSubscriberCount(new PackageSubscriberCountUpdateRequest(packageDto.getId(), packageDto.getPermittedCount() - 1));
 
             SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
                     .packageId(packageDto.getId())
                     .userId(subscriptionCreditRequest.getUserId())
                     .amount(packageDto.getPrice())
-                    .createdAt(LocalDate.now())
                     .status(SubscriptionStatus.ACTIVE)
                     .build();
 
@@ -71,7 +70,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             validateRefundWindow(packageDto);
 
-            userClient.creditFunds(new UserBalanceCreditRequest(subscriptionEntity.getUserId(), subscriptionEntity.getAmount()));
+            billingClient.creditFunds(new UserBalanceCreditRequest(subscriptionEntity.getUserId(), subscriptionEntity.getAmount()));
             packageClient.updatePackageSubscriberCount(new PackageSubscriberCountUpdateRequest(packageDto.getId(), packageDto.getAvailableCount() + 1));
             subscriptionRepository.delete(subscriptionEntity);
         } catch (Exception ex) {
@@ -81,6 +80,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private void validateSubscriptionAvailability(PackageDto pkg) {
+        log.info("Is there available seat for [{}] ? [{}]", pkg.getName(), pkg.getAvailableCount());
+
         if (pkg.getAvailableCount() <= 0) {
             throw new SubscriptionException(HttpStatus.BAD_REQUEST, "Subscription slots are full");
         }
@@ -88,6 +89,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private void validateSubscriptionWindow(PackageDto pkg) {
         LocalDate today = LocalDate.now();
+
+        log.info("Is still in subscription window for [{}]? [{}]", pkg.getName(), today.isBefore(pkg.getClosedDate()));
+
         if (today.isAfter(pkg.getClosedDate())) {
             throw new SubscriptionException(HttpStatus.BAD_REQUEST, "Subscription window not available");
         }
@@ -95,6 +99,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private void validateRefundWindow(PackageDto pkg) {
         LocalDate today = LocalDate.now();
+
+        log.info("Is still in refund window for [{}]? [{}]", pkg.getName(), today.isAfter(pkg.getOpenedDate().plusWeeks(1)));
+
         if (today.isAfter(pkg.getOpenedDate().plusWeeks(1))) {
             throw new RefundException(HttpStatus.BAD_REQUEST, "Refund period has expired");
         }

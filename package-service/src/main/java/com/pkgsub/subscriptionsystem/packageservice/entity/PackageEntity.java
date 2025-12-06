@@ -1,8 +1,11 @@
 package com.pkgsub.subscriptionsystem.packageservice.entity;
 
+import com.pkgsub.subscriptionsystem.common.entity.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -12,8 +15,9 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "packages")
-public class PackageEntity {
+@Table(name = "app_packages")
+@EntityListeners(AuditingEntityListener.class)
+public class PackageEntity extends Auditable implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

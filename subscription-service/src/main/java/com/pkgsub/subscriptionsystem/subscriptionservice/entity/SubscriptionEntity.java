@@ -1,9 +1,12 @@
 package com.pkgsub.subscriptionsystem.subscriptionservice.entity;
 
+import com.pkgsub.subscriptionsystem.common.entity.audit.Auditable;
 import com.pkgsub.subscriptionsystem.common.enumerations.SubscriptionStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -14,10 +17,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
-        name = "subscriptions",
+        name = "app_subscriptions",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "package_id"})
 )
-public class SubscriptionEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class SubscriptionEntity extends Auditable implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
@@ -28,14 +32,11 @@ public class SubscriptionEntity {
   @Column(name = "package_id", nullable = false)
   private String packageId;
 
+  @Column(nullable = false)
   private BigDecimal amount;
-
-  private LocalDate createdAt;
 
   @Enumerated(EnumType.STRING)
   private SubscriptionStatus status;
 
   private LocalDate refundedAt;
-
-  private String externalTransactionId; // from billing
 }

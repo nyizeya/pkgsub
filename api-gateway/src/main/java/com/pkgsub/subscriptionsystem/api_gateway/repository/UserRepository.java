@@ -1,0 +1,14 @@
+package com.pkgsub.subscriptionsystem.api_gateway.repository;
+
+import com.pkgsub.subscriptionsystem.api_gateway.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, String> {
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
+
+    Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
+}

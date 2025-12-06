@@ -1,3 +1,3 @@
 package com.pkgsub.subscriptionsystem.common.enumerations;
 
-public enum SubscriptionStatus { PENDING, ACTIVE, CANCELLED, REFUNDED, FAILED }
+public enum SubscriptionStatus { ACTIVE, REFUNDED }

@@ -8,6 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<SubscriptionEntity, String> {
-    Optional<SubscriptionEntity> findByUserIdAndPackageId(Long userId, Long packageId);
-    List<SubscriptionEntity> findByPackageIdAndStatus(Long packageId, SubscriptionStatus status);
+    Optional<SubscriptionEntity> findByUserIdAndPackageId(String userId, String packageId);
+    List<SubscriptionEntity> findByPackageIdAndStatus(String packageId, SubscriptionStatus status);
 }
