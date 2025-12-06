@@ -1,10 +1,8 @@
 package com.pkgsub.subscriptionsystem.api_gateway.security.jwt.services;
 
-import com.pkgsub.subscriptionsystem.api_gateway.security.service.UserDetailsImpl;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -32,8 +30,8 @@ public class JwtService {
 
     private static final String TOKEN_PREFIX = "Bearer ";
 
-    public String getTokenFromHeader(HttpServletRequest request) {
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    public String getTokenFromHeader(HttpHeaders headers) {
+        String authHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.startsWith(TOKEN_PREFIX)) {
             return authHeader.substring(7);
         }

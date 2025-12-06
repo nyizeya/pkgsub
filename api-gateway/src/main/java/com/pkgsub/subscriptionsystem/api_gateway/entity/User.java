@@ -64,15 +64,4 @@ public class User extends Auditable implements Serializable {
     @Column(name = "account_expiry_date")
     private LocalDate accountExpiryDate = LocalDate.now().plusYears(1);
 
-    public User(String userName, String email, String password) {
-        this.username = userName;
-        this.email = email;
-        this.password = password;
-    }
-
-    public User(String userName, String email) {
-        this.username = userName;
-        this.email = email;
-    }
-
 }

@@ -1,50 +1,46 @@
 package com.pkgsub.subscriptionsystem.api_gateway.security.jwt.filters;
 
 import com.pkgsub.subscriptionsystem.api_gateway.security.jwt.services.JwtService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthTokenFilter extends OncePerRequestFilter {
+public class AuthTokenFilter implements WebFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final ReactiveUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.debug("Auth token filter called for url : {}", request.getRequestURI());
-        try {
-            String token = jwtService.getTokenFromHeader(request);
-            if (token != null && jwtService.isTokenValid(token)) {
-                String username = jwtService.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String token = jwtService.getTokenFromHeader(exchange.getRequest().getHeaders());
 
-                log.info("Roles from JWT : {}", userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (token != null && jwtService.isTokenValid(token)) {
+            String username = jwtService.getUsernameFromToken(token);
+
+            return userDetailsService.findByUsername(username)
+                    .flatMap(userDetails -> {
+                        UsernamePasswordAuthenticationToken auth =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails, null, userDetails.getAuthorities()
+                                );
+
+                        log.info("Roles from JWT: {}", userDetails.getAuthorities());
+
+                        return chain.filter(exchange)
+                                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+                    });
         }
 
-        filterChain.doFilter(request, response);
+        return chain.filter(exchange);
     }
 }

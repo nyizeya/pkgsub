@@ -1,23 +1,26 @@
 package com.pkgsub.subscriptionsystem.api_gateway.security.service;
 
-import com.pkgsub.subscriptionsystem.api_gateway.entity.User;
 import com.pkgsub.subscriptionsystem.api_gateway.repository.UserRepository;
 import com.pkgsub.subscriptionsystem.common.exceptions.UsernameNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements ReactiveUserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(HttpStatus.NOT_FOUND, "User with username [%s] is not found".formatted(username)));
-        return new UserDetailsImpl(user);
+    public Mono<UserDetails> findByUsername(String username) {
+        return Mono.fromCallable(() -> userRepository.findByUsername(username))
+                .flatMap(optionalUser -> optionalUser
+                        .map(user -> Mono.just(new UserDetailsImpl(optionalUser.get())))
+                        .orElseGet(() -> Mono.error(new UsernameNotFoundException(
+                                "User with username [%s] is not found".formatted(username))))
+                );
     }
 }

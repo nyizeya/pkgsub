@@ -1,36 +1,44 @@
 package com.pkgsub.subscriptionsystem.api_gateway.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @Component
-public class AuthEntryPoint implements AuthenticationEntryPoint {
+public class AuthEntryPoint implements ServerAuthenticationEntryPoint {
+    final ObjectMapper mapper = new ObjectMapper();
+
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        log.error("Unauthorized error : {}", authException.getMessage());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException e) {
+        log.error("Unauthorized error: {}", e.getMessage());
 
-        final Map<String, Object> body = new HashMap<>() {{
-            put("status", HttpServletResponse.SC_UNAUTHORIZED);
-            put("error", "Unauthorized");
-            put("message", authException.getMessage());
-            put("path", request.getServletPath());
-        }};
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        body.put("error", "Unauthorized");
+        body.put("message", e.getMessage());
+        body.put("path", exchange.getRequest().getPath().value());
+
+        byte[] bytes;
+        try {
+            bytes = mapper.writeValueAsBytes(body);
+        } catch (Exception ex) {
+            bytes = new byte[0];
+        }
+
+        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
+                .bufferFactory().wrap(bytes)));
     }
 }

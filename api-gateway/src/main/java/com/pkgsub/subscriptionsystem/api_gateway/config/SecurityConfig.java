@@ -5,25 +5,25 @@ import com.pkgsub.subscriptionsystem.api_gateway.security.jwt.filters.AuthTokenF
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -31,26 +31,20 @@ public class SecurityConfig {
     private final AuthEntryPoint authEntryPoint;
     private final AuthTokenFilter authTokenFilter;
 
-//    @Lazy
-//    @Autowired
-//    private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-
     private static final String[] PUBLIC_URL = {"/api/auth/**"};
 
     @Bean
-    public SecurityFilterChain httpSecurity(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("/api/auth/**").permitAll()
+                        .anyExchange().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authEntryPoint))
+                .addFilterAt(authTokenFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .httpBasic(Customizer.withDefaults());
 
-        http.authorizeHttpRequests(req -> {
-            req.requestMatchers(PUBLIC_URL).permitAll();
-            req.anyRequest().authenticated();
-        });
-
-        http.exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint));
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
-        http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
 
@@ -60,14 +54,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public ReactiveAuthenticationManager reactiveAuthenticationManager(ReactiveUserDetailsService userDetailsService) {
+        return authentication -> userDetailsService.findByUsername(authentication.getName())
+                .map(userDetails -> new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities()));
     }
 
 
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

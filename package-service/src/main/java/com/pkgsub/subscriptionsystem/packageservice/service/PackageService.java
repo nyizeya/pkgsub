@@ -6,7 +6,6 @@ import com.pkgsub.subscriptionsystem.common.dto.response.PackageDto;
 import com.pkgsub.subscriptionsystem.packageservice.entity.PackageEntity;
 
 import java.time.Instant;
-import java.util.List;
 
 public interface PackageService {
     PackageDto createPackage(PackageCreateRequest dto);
