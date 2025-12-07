@@ -2,17 +2,24 @@ package com.pkgsub.subscriptionsystem.common.dto.response;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
 public class LoginResponseDTO {
+    private String id;
+    private String email;
     private String username;
     private String jwtToken;
     private Set<String> roles;
+    private BigDecimal balance;
 
-    public LoginResponseDTO(String username, String jwtToken, Set<String> roles) {
+    public LoginResponseDTO(String id, String email, String username, String jwtToken, Set<String> roles, BigDecimal balance) {
+        this.id = id;
+        this.email = email;
         this.username = username;
         this.jwtToken = jwtToken;
         this.roles = roles;
+        this.balance = balance;
     }
 }

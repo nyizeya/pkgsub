@@ -1,6 +1,7 @@
 package com.pkgsub.subscriptionsystem.api_gateway.web.rest;
 
 import com.pkgsub.subscriptionsystem.api_gateway.security.jwt.services.JwtService;
+import com.pkgsub.subscriptionsystem.api_gateway.security.service.UserDetailsImpl;
 import com.pkgsub.subscriptionsystem.api_gateway.service.UserService;
 import com.pkgsub.subscriptionsystem.common.dto.request.LoginRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.SignUpRequest;
@@ -14,13 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,22 +33,33 @@ public class AuthResource {
     private final ReactiveAuthenticationManager reactiveAuthenticationManager;
 
     @PostMapping("/sign-in")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@Valid @RequestBody LoginRequest request) {
-        Authentication authentication;
+    public Mono<ResponseEntity<ApiResponse<LoginResponseDTO>>> login(@Valid @RequestBody LoginRequest request) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                request.getUsername(),
+                request.getPassword()
+        );
 
-        try {
-            authentication = reactiveAuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())).block();
-        } catch (AuthenticationException e) {
-            throw new BadCredentialsException("Bad credentials");
-        }
+        return reactiveAuthenticationManager.authenticate(authenticationToken)
+                .flatMap(authentication -> {
+                    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                    String jwtToken = jwtService.generateTokenFromUsername(userDetails);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    Set<String> roles = userDetails.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .collect(Collectors.toSet());
 
-        final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        final String jwtToken = jwtService.generateTokenFromUsername(userDetails);
-        return ResponseEntity.ok(ApiResponse.success(
-                new LoginResponseDTO(userDetails.getUsername(), jwtToken, userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()))
-        ));
+                    LoginResponseDTO responseDTO = new LoginResponseDTO(
+                            userDetails.getUser().getId(),
+                            userDetails.getUser().getEmail(),
+                            userDetails.getUsername(),
+                            jwtToken,
+                            roles,
+                            userDetails.getUser().getBalance()
+                    );
+
+                    return Mono.just(ResponseEntity.ok(ApiResponse.success(responseDTO)));
+                })
+                .onErrorResume(AuthenticationException.class, e -> Mono.error(new BadCredentialsException("Bad credentials")));
     }
 
     @PostMapping("/sign-up")

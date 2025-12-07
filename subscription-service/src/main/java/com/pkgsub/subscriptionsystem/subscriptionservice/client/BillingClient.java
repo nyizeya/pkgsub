@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "billing-service", path = "/api/users")
+@FeignClient(name = "billing-service", path = "/api/billing")
 public interface BillingClient {
     @PostMapping("/debit/fund")
     void debitFunds(@Valid @RequestBody UserBalanceDebitRequest request);

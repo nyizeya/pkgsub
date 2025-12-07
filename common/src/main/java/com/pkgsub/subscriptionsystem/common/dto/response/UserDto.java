@@ -6,14 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
     private String id;
-    private String username;
     private String email;
-    private AppUserRole role;
+    private String username;
     private Boolean active;
+    private AppUserRole role;
+    private BigDecimal balance;
 }

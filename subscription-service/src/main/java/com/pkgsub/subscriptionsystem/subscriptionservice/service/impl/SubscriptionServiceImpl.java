@@ -13,6 +13,7 @@ import com.pkgsub.subscriptionsystem.subscriptionservice.entity.SubscriptionEnti
 import com.pkgsub.subscriptionsystem.subscriptionservice.repository.SubscriptionRepository;
 import com.pkgsub.subscriptionsystem.subscriptionservice.service.SubscriptionService;
 import com.pkgsub.subscriptionsystem.subscriptionservice.web.mapper.SubscriptionMapper;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -50,9 +51,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     .build();
 
             return subscriptionMapper.toDTO(subscriptionRepository.save(subscriptionEntity));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+        } catch (FeignException ex) {
+            log.error("{}", ex.getMessage());
+            throw new SubscriptionException(ex.status(), ex.getMessage());
         }
     }
 
@@ -73,9 +74,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             billingClient.creditFunds(new UserBalanceCreditRequest(subscriptionEntity.getUserId(), subscriptionEntity.getAmount()));
             packageClient.updatePackageSubscriberCount(new PackageSubscriberCountUpdateRequest(packageDto.getId(), packageDto.getAvailableCount() + 1));
             subscriptionRepository.delete(subscriptionEntity);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+        } catch (FeignException ex) {
+            log.error("{}", ex.getMessage());
+            throw new RefundException(ex.status(), ex.getMessage());
         }
     }
 

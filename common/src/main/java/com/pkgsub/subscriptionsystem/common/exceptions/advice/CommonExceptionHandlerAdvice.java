@@ -2,6 +2,8 @@ package com.pkgsub.subscriptionsystem.common.exceptions.advice;
 
 import com.pkgsub.subscriptionsystem.common.dto.response.ErrorResponse;
 import com.pkgsub.subscriptionsystem.common.exceptions.EntityNotFoundException;
+import com.pkgsub.subscriptionsystem.common.exceptions.RefundException;
+import com.pkgsub.subscriptionsystem.common.exceptions.SubscriptionException;
 import com.pkgsub.subscriptionsystem.common.exceptions.UsernameNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,6 +43,18 @@ public class CommonExceptionHandlerAdvice {
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> entityNotFoundException(EntityNotFoundException e) {
         log.error("EntityNotFoundException => {}", e.getMessage());
+        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
+    }
+
+    @ExceptionHandler(value = RefundException.class)
+    public ResponseEntity<ErrorResponse> refundException(RefundException e) {
+        log.error("RefundException => {}", e.getMessage());
+        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
+    }
+
+    @ExceptionHandler(value = SubscriptionException.class)
+    public ResponseEntity<ErrorResponse> subscriptionException(SubscriptionException e) {
+        log.error("SubscriptionException => {}", e.getMessage());
         return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
     }
 
