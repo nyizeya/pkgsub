@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 
 @Slf4j
 @RestControllerAdvice
@@ -56,6 +57,16 @@ public class CommonExceptionHandlerAdvice {
     public ResponseEntity<ErrorResponse> subscriptionException(SubscriptionException e) {
         log.error("SubscriptionException => {}", e.getMessage());
         return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity<ErrorResponse> handleWebExchangeBindException(WebExchangeBindException e) {
+        log.error("WebExchangeBindException => {}", e.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.ofStatus(HttpStatus.BAD_REQUEST);
+        errorResponse.setMessage("Validation failed for request arguments. Please review the errors and try again.");
+        errorResponse.addFieldValidationErrors(e.getBindingResult().getFieldErrors());
+        errorResponse.addGlobalValidationErrors(e.getBindingResult().getGlobalErrors());
+        return buildResponseEntity(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
