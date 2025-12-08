@@ -11,12 +11,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/packages")
 public class PackageResource {
 
     private final PackageService packageService;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<PackageDto>>> getPackages() {
+        return ResponseEntity.ok(ApiResponse.success(packageService.getPackages()));
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PackageDto>> createPackage(@Valid @RequestBody PackageCreateRequest dto) {

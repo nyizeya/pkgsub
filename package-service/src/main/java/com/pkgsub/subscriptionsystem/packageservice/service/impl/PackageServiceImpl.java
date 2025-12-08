@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -25,6 +26,11 @@ public class PackageServiceImpl implements PackageService {
 
     private final PackageMapper packageMapper;
     private final PackageRepository packageRepository;
+
+    @Override
+    public List<PackageDto> getPackages() {
+        return packageMapper.toDTOList(packageRepository.findAll());
+    }
 
     @Transactional
     @Override

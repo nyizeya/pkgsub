@@ -3,12 +3,11 @@ package com.pkgsub.subscriptionsystem.api_gateway.security.jwt.filters;
 import com.pkgsub.subscriptionsystem.api_gateway.security.jwt.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.PathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -22,18 +21,8 @@ public class AuthTokenFilter implements WebFilter {
     private final JwtService jwtService;
     private final ReactiveUserDetailsService userDetailsService;
 
-    private static final String AUTH_PATH = "/api/auth/**";
-    private final PathMatcher pathMatcher = new AntPathMatcher();
-
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String path = exchange.getRequest().getURI().getPath();
-
-        if (pathMatcher.match(AUTH_PATH, path)) {
-            return chain.filter(exchange);
-        }
-
-
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         String token = jwtService.getTokenFromHeader(exchange.getRequest().getHeaders());
 
         if (token != null && jwtService.isTokenValid(token)) {
