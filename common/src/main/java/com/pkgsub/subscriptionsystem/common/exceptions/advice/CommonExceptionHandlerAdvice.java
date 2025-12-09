@@ -1,10 +1,7 @@
 package com.pkgsub.subscriptionsystem.common.exceptions.advice;
 
 import com.pkgsub.subscriptionsystem.common.dto.response.ErrorResponse;
-import com.pkgsub.subscriptionsystem.common.exceptions.EntityNotFoundException;
-import com.pkgsub.subscriptionsystem.common.exceptions.RefundException;
-import com.pkgsub.subscriptionsystem.common.exceptions.SubscriptionException;
-import com.pkgsub.subscriptionsystem.common.exceptions.UsernameNotFoundException;
+import com.pkgsub.subscriptionsystem.common.exceptions.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -37,6 +34,12 @@ public class CommonExceptionHandlerAdvice {
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ErrorResponse> exception(Exception e) {
         log.error("UnExpectedException => {}", e.getMessage());
+        return buildResponseEntity(ErrorResponse.ofException(e));
+    }
+
+    @ExceptionHandler(value = DatabaseException.class)
+    public ResponseEntity<ErrorResponse> databaseException(DatabaseException e) {
+        log.error("DatabaseException => {}", e.getMessage());
         return buildResponseEntity(ErrorResponse.ofException(e));
     }
 

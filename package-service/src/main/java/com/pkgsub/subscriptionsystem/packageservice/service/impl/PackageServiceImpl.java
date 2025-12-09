@@ -3,6 +3,7 @@ package com.pkgsub.subscriptionsystem.packageservice.service.impl;
 import com.pkgsub.subscriptionsystem.common.dto.request.PackageCreateRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.PackageSubscriberCountUpdateRequest;
 import com.pkgsub.subscriptionsystem.common.dto.response.PackageDto;
+import com.pkgsub.subscriptionsystem.common.exceptions.DatabaseException;
 import com.pkgsub.subscriptionsystem.common.exceptions.EntityNotFoundException;
 import com.pkgsub.subscriptionsystem.packageservice.entity.PackageEntity;
 import com.pkgsub.subscriptionsystem.packageservice.repository.PackageRepository;
@@ -10,6 +11,7 @@ import com.pkgsub.subscriptionsystem.packageservice.service.PackageService;
 import com.pkgsub.subscriptionsystem.packageservice.web.mapper.PackageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,20 +37,25 @@ public class PackageServiceImpl implements PackageService {
     @Transactional
     @Override
     public PackageDto createPackage(PackageCreateRequest dto) {
-        log.info("Creating new package: {}", dto.getName());
+        try {
+            log.info("Creating new package: {}", dto.getName());
 
-        var entity = PackageEntity.builder()
-                .id(dto.getId())
-                .name(dto.getName())
-                .openedDate(dto.getOpenedDate())
-                .closedDate(dto.getClosedDate())
-                .price(dto.getPrice())
-                .availableCount(dto.getPermittedCount())
-                .permittedCount(dto.getPermittedCount())
-                .build();
+            var entity = PackageEntity.builder()
+                    .id(dto.getId())
+                    .name(dto.getName())
+                    .openedDate(dto.getOpenedDate())
+                    .closedDate(dto.getClosedDate())
+                    .price(dto.getPrice())
+                    .availableCount(dto.getPermittedCount())
+                    .permittedCount(dto.getPermittedCount())
+                    .build();
 
-        entity = packageRepository.save(entity);
-        return packageMapper.toDTO(entity);
+            entity = packageRepository.save(entity);
+            return packageMapper.toDTO(entity);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Database constraint violation when create or update: {}", ex.getMessage());
+            throw new DatabaseException("A database constraint violation occurred. Please check the field causing the conflict.", ex);
+        }
     }
 
     @Transactional
