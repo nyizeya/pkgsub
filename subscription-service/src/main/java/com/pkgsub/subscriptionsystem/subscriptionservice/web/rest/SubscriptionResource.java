@@ -4,6 +4,7 @@ import com.pkgsub.subscriptionsystem.common.dto.request.SubscriptionCreditReques
 import com.pkgsub.subscriptionsystem.common.dto.request.SubscriptionRefundRequest;
 import com.pkgsub.subscriptionsystem.common.dto.response.ApiResponse;
 import com.pkgsub.subscriptionsystem.common.dto.response.SubscriptionDto;
+import com.pkgsub.subscriptionsystem.common.exceptions.SubscriptionException;
 import com.pkgsub.subscriptionsystem.subscriptionservice.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +12,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/subscriptions")
 public class SubscriptionResource {
 
     private final SubscriptionService subscriptionService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<List<SubscriptionDto>>> getSubscriptions(@PathVariable("userId") String userId) {
+        return ResponseEntity.ok(ApiResponse.success(subscriptionService.getSubscriptions(userId)));
+    }
 
     @PostMapping("/subscribe")
     public ResponseEntity<ApiResponse<SubscriptionDto>> createSubscription(@Valid @RequestBody SubscriptionCreditRequest subscriptionCreditRequest) {

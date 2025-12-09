@@ -16,13 +16,19 @@ public class CommonExceptionHandlerAdvice {
     @ExceptionHandler(value = UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponse> userNameNotFoundException(UsernameNotFoundException e) {
         log.error("UsernameNotFoundException => {}", e.getMessage());
-        return buildResponseEntity(ErrorResponse.of(HttpStatus.valueOf(e.getCode()), e));
+        return buildResponseEntity(ErrorResponse.of(HttpStatus.NOT_FOUND, e));
     }
 
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> dataIntegrityViolationException(DataIntegrityViolationException e) {
         log.error("DataIntegrityViolationException => {}", e.getMessage());
         return buildResponseEntity(ErrorResponse.ofException(e));
+    }
+
+    @ExceptionHandler(value = DuplicatePackageNameException.class)
+    public ResponseEntity<ErrorResponse> duplicatePackageNameException(DuplicatePackageNameException e) {
+        log.error("DuplicatePackageNameException => {}", e.getMessage());
+        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.BAD_REQUEST, e));
     }
 
     @ExceptionHandler(value = IllegalArgumentException.class)
@@ -46,7 +52,7 @@ public class CommonExceptionHandlerAdvice {
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> entityNotFoundException(EntityNotFoundException e) {
         log.error("EntityNotFoundException => {}", e.getMessage());
-        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
+        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.NOT_FOUND, e));
     }
 
     @ExceptionHandler(value = RefundException.class)
@@ -58,6 +64,12 @@ public class CommonExceptionHandlerAdvice {
     @ExceptionHandler(value = SubscriptionException.class)
     public ResponseEntity<ErrorResponse> subscriptionException(SubscriptionException e) {
         log.error("SubscriptionException => {}", e.getMessage());
+        return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
+    }
+
+    @ExceptionHandler(value = TransactionValidationException.class)
+    public ResponseEntity<ErrorResponse> transactionValidationException(TransactionValidationException e) {
+        log.error("TransactionValidationException => {}", e.getMessage());
         return buildResponseEntity(ErrorResponse.ofException(HttpStatus.valueOf(e.getCode()), e));
     }
 

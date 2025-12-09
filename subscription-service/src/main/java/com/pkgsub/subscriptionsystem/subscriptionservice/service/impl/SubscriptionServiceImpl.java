@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -32,10 +33,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionMapper subscriptionMapper;
     private final SubscriptionRepository subscriptionRepository;
 
+    @Override
+    public List<SubscriptionDto> getSubscriptions(String userId) {
+        return subscriptionMapper.toDTOList(subscriptionRepository.findByUserId(userId));
+    }
+
     @Transactional
     @Override
     public SubscriptionDto subscribe(SubscriptionCreditRequest subscriptionCreditRequest) throws SubscriptionException {
         try {
+            log.info("Subscribing a package: {}", subscriptionCreditRequest);
             PackageDto packageDto = packageClient.getPackage(subscriptionCreditRequest.getPackageId()).getData();
             validateSubscriptionAvailability(packageDto);
             validateSubscriptionWindow(packageDto);
@@ -61,6 +68,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public void refundSubscription(SubscriptionRefundRequest subscriptionRefundRequest) throws RefundException {
         try {
+            log.info("Refunding a package: {}", subscriptionRefundRequest);
             var subscriptionEntity = findById(subscriptionRefundRequest.getSubscriptionId());
 
             if (!StringUtils.equals(subscriptionRefundRequest.getSubscriptionId(), subscriptionEntity.getId())) {
@@ -82,6 +90,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private void validateSubscriptionAvailability(PackageDto pkg) {
         log.info("Is there available seat for [{}] ? [{}]", pkg.getName(), pkg.getAvailableCount());
+
+        subscriptionRepository.findByPackageId(pkg.getId()).ifPresent(sub -> {
+            throw new SubscriptionException(HttpStatus.CONFLICT, "You've already subscribed %s".formatted(pkg.getName()));
+        });
 
         if (pkg.getAvailableCount() <= 0) {
             throw new SubscriptionException(HttpStatus.BAD_REQUEST, "Subscription slots are full");

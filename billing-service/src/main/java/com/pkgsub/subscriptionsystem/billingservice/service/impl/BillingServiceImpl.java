@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,12 +38,14 @@ public class BillingServiceImpl implements BillingService {
     @Transactional
     @Override
     public void credit(UserBalanceCreditRequest userBalanceCreditRequest) {
+        if (userBalanceCreditRequest.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new TransactionValidationException(HttpStatus.BAD_REQUEST, "Invalid tranaction amount for credit.");
+        }
+
         var entity = findById(userBalanceCreditRequest.getUserId());
         entity.setBalance(entity.getBalance().add(userBalanceCreditRequest.getAmount()));
         userRepository.save(entity);
     }
-
-
 
     private User findById(String id) {
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with id [%s] is not found".formatted(id)));
