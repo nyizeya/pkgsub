@@ -13,6 +13,7 @@ public class SubscriptionDto {
     String id;
     String userId;
     String packageId;
+    String packageName;
     BigDecimal amount;
     LocalDateTime createdAt;
     SubscriptionStatus status;

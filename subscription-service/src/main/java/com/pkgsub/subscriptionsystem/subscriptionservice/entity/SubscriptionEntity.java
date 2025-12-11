@@ -26,15 +26,19 @@ public class SubscriptionEntity extends Auditable implements Serializable {
   @GeneratedValue(strategy = GenerationType.UUID)
   private String id;
 
-  @Column(name = "user_id", nullable = false)
+  @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
   private String userId;
 
-  @Column(name = "package_id", nullable = false)
+  @Column(name = "package_id", nullable = false, columnDefinition = "VARCHAR(36)")
   private String packageId;
+
+  @Column(name = "package_name", nullable = false, columnDefinition = "VARCHAR(30)")
+  private String packageName;
 
   @Column(nullable = false)
   private BigDecimal amount;
 
+  @Column(columnDefinition = "VARCHAR(8)")
   @Enumerated(EnumType.STRING)
   private SubscriptionStatus status;
 

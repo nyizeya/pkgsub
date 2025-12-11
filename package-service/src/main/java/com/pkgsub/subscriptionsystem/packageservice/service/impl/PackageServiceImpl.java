@@ -38,6 +38,10 @@ public class PackageServiceImpl implements PackageService {
     public PackageDto createPackage(PackageCreateRequest dto) {
         log.info("Creating new package: {}", dto.getName());
 
+        if (dto.getClosedDate().isBefore(dto.getOpenedDate())) {
+            throw new IllegalArgumentException("Closed date cannot be before opened");
+        }
+
         packageRepository.findByName(dto.getName()).ifPresent(packageEntity -> {
             throw new DuplicatePackageNameException(HttpStatus.CONFLICT, "Package with name [%s] already exists".formatted(dto.getName()));
         });

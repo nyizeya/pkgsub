@@ -22,7 +22,7 @@ public class PackageEntity extends Auditable implements Serializable {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable=false, unique = true)
+    @Column(nullable=false, unique = true, columnDefinition = "VARCHAR(30)")
     private String name;
 
     @Column(nullable=false)

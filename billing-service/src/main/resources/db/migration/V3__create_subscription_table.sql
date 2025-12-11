@@ -1,16 +1,17 @@
 CREATE TABLE app_subscriptions (
                                    id VARCHAR(36) NOT NULL,
 
-                                   user_id VARCHAR(255) NOT NULL,
-                                   package_id VARCHAR(255) NOT NULL,
+                                   user_id VARCHAR(36) NOT NULL,
+                                   package_id VARCHAR(36) NOT NULL,
+                                   package_name VARCHAR(30) NOT NULL,
                                    amount DECIMAL(10, 2) NOT NULL,
-                                   status VARCHAR(50) NOT NULL,
+                                   status VARCHAR(8) NOT NULL,
                                    refunded_at DATE,
 
-                                   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                   modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                                   created_by VARCHAR(255),
-                                   modified_by VARCHAR(255),
+                                   created_at DATETIME,
+                                   modified_at DATETIME,
+                                   created_by VARCHAR(30),
+                                   modified_by VARCHAR(30),
 
                                    PRIMARY KEY (id),
 

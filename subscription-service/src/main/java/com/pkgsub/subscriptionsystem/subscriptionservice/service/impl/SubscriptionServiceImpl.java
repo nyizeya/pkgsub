@@ -44,7 +44,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         try {
             log.info("Subscribing a package: {}", subscriptionCreditRequest);
             PackageDto packageDto = packageClient.getPackage(subscriptionCreditRequest.getPackageId()).getData();
-            validateSubscriptionAvailability(packageDto);
+            validateSubscriptionAvailability(packageDto, subscriptionCreditRequest.getUserId());
             validateSubscriptionWindow(packageDto);
 
             billingClient.debitFunds(new UserBalanceDebitRequest(subscriptionCreditRequest.getUserId(), packageDto.getPrice()));
@@ -52,6 +52,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
                     .packageId(packageDto.getId())
+                    .packageName(packageDto.getName())
                     .userId(subscriptionCreditRequest.getUserId())
                     .amount(packageDto.getPrice())
                     .status(SubscriptionStatus.ACTIVE)
@@ -88,10 +89,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
-    private void validateSubscriptionAvailability(PackageDto pkg) {
+    private void validateSubscriptionAvailability(PackageDto pkg, String userId) {
         log.info("Is there available seat for [{}] ? [{}]", pkg.getName(), pkg.getAvailableCount());
 
-        subscriptionRepository.findByPackageId(pkg.getId()).ifPresent(sub -> {
+        subscriptionRepository.findByPackageIdAndUserId(pkg.getId(), userId).ifPresent(sub -> {
             throw new SubscriptionException(HttpStatus.CONFLICT, "You've already subscribed %s".formatted(pkg.getName()));
         });
 

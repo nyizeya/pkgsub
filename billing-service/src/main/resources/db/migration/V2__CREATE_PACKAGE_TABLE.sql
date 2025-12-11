@@ -1,7 +1,7 @@
 CREATE TABLE app_packages (
                               id VARCHAR(36) NOT NULL PRIMARY KEY,
 
-                              name VARCHAR(255) NOT NULL,
+                              name VARCHAR(30) NOT NULL,
                               opened_date DATE NOT NULL,
                               closed_date DATE NOT NULL,
 
@@ -10,11 +10,11 @@ CREATE TABLE app_packages (
 
                               price DECIMAL(19,2) NOT NULL,
 
-                              created_by VARCHAR(255),
-                              modified_by VARCHAR(255),
+                              created_by VARCHAR(30),
+                              modified_by VARCHAR(30),
 
-                              created_at DATETIME(6),
-                              modified_at DATETIME(6)
+                              created_at DATETIME,
+                              modified_at DATETIME
 );
 
 ALTER TABLE app_packages ADD CONSTRAINT uq_app_packages_name UNIQUE (name);

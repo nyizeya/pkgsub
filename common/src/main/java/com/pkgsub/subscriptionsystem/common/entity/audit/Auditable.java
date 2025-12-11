@@ -17,11 +17,11 @@ import java.time.LocalDateTime;
 public abstract class Auditable {
 
     @CreatedBy
-    @Column(name = "created_by", updatable = false)
+    @Column(name = "created_by", updatable = false, columnDefinition = "VARCHAR(30)")
     private String createdBy;
 
     @LastModifiedBy
-    @Column(name = "modified_by")
+    @Column(name = "modified_by", columnDefinition = "VARCHAR(30)")
     private String modifiedBy;
 
     @CreatedDate

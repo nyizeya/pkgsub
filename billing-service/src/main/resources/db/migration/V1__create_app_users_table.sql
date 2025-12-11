@@ -9,17 +9,17 @@ CREATE TABLE app_users (
 
                            app_user_role VARCHAR(5) NOT NULL DEFAULT 'USER',
 
-                           enabled BIT NOT NULL DEFAULT 1,
-                           account_non_locked BIT NOT NULL DEFAULT 1,
-                           account_non_expired BIT NOT NULL DEFAULT 1,
-                           credentials_non_expired BIT NOT NULL DEFAULT 1,
+                           enabled VARCHAR(5) NOT NULL DEFAULT 1,
+                           account_non_locked VARCHAR(5) NOT NULL DEFAULT 1,
+                           account_non_expired VARCHAR(5) NOT NULL DEFAULT 1,
+                           credentials_non_expired VARCHAR(5) NOT NULL DEFAULT 1,
 
                            credentials_expiry_date DATE NOT NULL,
                            account_expiry_date DATE NOT NULL,
 
-                           created_by VARCHAR(255),
+                           created_by VARCHAR(30),
                            created_at DATETIME,
-                           modified_by VARCHAR(255),
+                           modified_by VARCHAR(30),
                            modified_at DATETIME
 );
 

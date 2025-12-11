@@ -2,6 +2,7 @@ package com.pkgsub.subscriptionsystem.api_gateway.config;
 
 import com.pkgsub.subscriptionsystem.api_gateway.security.AuthEntryPoint;
 import com.pkgsub.subscriptionsystem.api_gateway.security.jwt.filters.AuthTokenFilter;
+import com.pkgsub.subscriptionsystem.common.enumerations.AppUserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +40,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers("/api/auth/**").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/package-service/api/packages").hasRole(AppUserRole.ADMIN.name())
                         .anyExchange().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authEntryPoint))

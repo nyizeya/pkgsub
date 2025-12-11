@@ -1,5 +1,6 @@
 package com.pkgsub.subscriptionsystem.common.dto.request;
 
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -18,6 +19,7 @@ public class PackageCreateRequest {
     @NotEmpty(message = "Package name cannot be empty")
     private String name;
 
+    @FutureOrPresent(message = "Opened cannot be in past")
     @NotNull(message = "Package opened date cannot be empty")
     private LocalDate openedDate;
 
