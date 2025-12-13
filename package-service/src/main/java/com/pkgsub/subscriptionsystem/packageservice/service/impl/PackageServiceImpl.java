@@ -30,7 +30,7 @@ public class PackageServiceImpl implements PackageService {
 
     @Override
     public List<PackageDto> getPackages() {
-        return packageMapper.toDTOList(packageRepository.findAll());
+        return packageMapper.toDTOList(packageRepository.findActivePackages());
     }
 
     @Transactional

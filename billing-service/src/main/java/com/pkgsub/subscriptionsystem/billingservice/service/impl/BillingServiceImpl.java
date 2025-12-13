@@ -1,5 +1,6 @@
 package com.pkgsub.subscriptionsystem.billingservice.service.impl;
 
+import com.pkgsub.subscriptionsystem.common.dto.request.TopUpRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.UserBalanceCreditRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.UserBalanceDebitRequest;
 import com.pkgsub.subscriptionsystem.common.exceptions.EntityNotFoundException;
@@ -21,6 +22,21 @@ import java.math.BigDecimal;
 public class BillingServiceImpl implements BillingService {
     private final UserRepository userRepository;
 
+    @Transactional
+    @Override
+    public void topUp(TopUpRequest request) {
+        if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new TransactionValidationException(HttpStatus.BAD_REQUEST, "Top up amount must be greater than zero");
+        }
+
+        if (request.getAmount().compareTo(new BigDecimal(10_000)) > 0) {
+            throw new TransactionValidationException(HttpStatus.BAD_REQUEST, "Ain't it too much? We know you're not that rich.");
+        }
+
+        User user = findById(request.getUserId());
+        user.setBalance(user.getBalance().add(request.getAmount()));
+        userRepository.save(user);
+    }
 
     @Transactional
     @Override

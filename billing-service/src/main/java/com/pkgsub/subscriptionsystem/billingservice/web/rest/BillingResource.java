@@ -1,5 +1,6 @@
 package com.pkgsub.subscriptionsystem.billingservice.web.rest;
 
+import com.pkgsub.subscriptionsystem.common.dto.request.TopUpRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.UserBalanceCreditRequest;
 import com.pkgsub.subscriptionsystem.common.dto.request.UserBalanceDebitRequest;
 import com.pkgsub.subscriptionsystem.billingservice.service.BillingService;
@@ -14,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 public class BillingResource {
 
     private final BillingService billingService;
+
+    @PostMapping("/topUp")
+    public ResponseEntity<Void> topUp(@Valid @RequestBody TopUpRequest request) {
+        billingService.topUp(request);
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/debit/fund")
     public ResponseEntity<Void> debitFunds(@Valid @RequestBody UserBalanceDebitRequest request) {

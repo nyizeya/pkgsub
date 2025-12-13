@@ -54,7 +54,8 @@ public class AuthResource {
                             userDetails.getUsername(),
                             jwtToken,
                             roles,
-                            userDetails.getUser().getBalance()
+                            userDetails.getUser().getBalance(),
+                            userDetails.getUser().getEnabled()
                     );
 
                     return Mono.just(ResponseEntity.ok(ApiResponse.success(responseDTO)));

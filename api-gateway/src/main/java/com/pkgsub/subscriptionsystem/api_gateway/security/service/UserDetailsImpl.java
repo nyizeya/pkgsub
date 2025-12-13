@@ -33,21 +33,21 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return user.isAccountNonExpired();
+        return user.getAccountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.isAccountNonLocked();
+        return user.getAccountNonLocked();
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return user.isCredentialsNonExpired();
+        return user.getCredentialsNonExpired();
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return user.getEnabled();
     }
 }

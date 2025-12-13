@@ -16,7 +16,7 @@ public class UserDto {
     private String id;
     private String email;
     private String username;
-    private Boolean active;
+    private Boolean enabled;
     private AppUserRole role;
     private BigDecimal balance;
 }

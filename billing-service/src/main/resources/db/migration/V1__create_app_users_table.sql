@@ -9,10 +9,10 @@ CREATE TABLE app_users (
 
                            app_user_role VARCHAR(5) NOT NULL DEFAULT 'USER',
 
-                           enabled VARCHAR(5) NOT NULL DEFAULT 1,
-                           account_non_locked VARCHAR(5) NOT NULL DEFAULT 1,
-                           account_non_expired VARCHAR(5) NOT NULL DEFAULT 1,
-                           credentials_non_expired VARCHAR(5) NOT NULL DEFAULT 1,
+                           enabled BIT NOT NULL DEFAULT 1,
+                           account_non_locked BIT NOT NULL DEFAULT 1,
+                           account_non_expired BIT NOT NULL DEFAULT 1,
+                           credentials_non_expired BIT NOT NULL DEFAULT 1,
 
                            credentials_expiry_date DATE NOT NULL,
                            account_expiry_date DATE NOT NULL,

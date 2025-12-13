@@ -46,17 +46,17 @@ public class User extends Auditable implements Serializable {
     @Column(name = "app_user_role", columnDefinition = "VARCHAR(5)")
     private AppUserRole role = AppUserRole.USER;
 
-    @Column(name = "enabled", columnDefinition = "VARCHAR(5)")
-    private boolean enabled = true;
+    @Column(name = "enabled")
+    private Boolean enabled = Boolean.TRUE;
 
-    @Column(name = "account_non_locked", columnDefinition = "VARCHAR(5)")
-    private boolean accountNonLocked = true;
+    @Column(name = "account_non_locked")
+    private Boolean accountNonLocked = Boolean.TRUE;
 
-    @Column(name = "account_non_expired", columnDefinition = "VARCHAR(5)")
-    private boolean accountNonExpired = true;
+    @Column(name = "account_non_expired")
+    private Boolean accountNonExpired = Boolean.TRUE;
 
-    @Column(name = "credentials_non_expired", columnDefinition = "VARCHAR(5)")
-    private boolean credentialsNonExpired = true;
+    @Column(name = "credentials_non_expired")
+    private Boolean credentialsNonExpired = Boolean.TRUE;
 
     @Column(name = "credentials_expiry_date")
     private LocalDate credentialsExpiryDate = LocalDate.now().plusYears(1);
