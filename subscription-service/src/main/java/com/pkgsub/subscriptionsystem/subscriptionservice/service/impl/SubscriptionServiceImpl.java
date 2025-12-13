@@ -11,6 +11,7 @@ import com.pkgsub.subscriptionsystem.subscriptionservice.client.PackageClient;
 import com.pkgsub.subscriptionsystem.subscriptionservice.client.BillingClient;
 import com.pkgsub.subscriptionsystem.subscriptionservice.entity.SubscriptionEntity;
 import com.pkgsub.subscriptionsystem.subscriptionservice.repository.SubscriptionRepository;
+import com.pkgsub.subscriptionsystem.subscriptionservice.service.RedisLockService;
 import com.pkgsub.subscriptionsystem.subscriptionservice.service.SubscriptionService;
 import com.pkgsub.subscriptionsystem.subscriptionservice.web.mapper.SubscriptionMapper;
 import feign.FeignException;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,6 +34,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final PackageClient packageClient;
     private final SubscriptionMapper subscriptionMapper;
     private final SubscriptionRepository subscriptionRepository;
+    private final RedisLockService redisLockService;
 
     @Override
     public List<SubscriptionDto> getSubscriptions(String userId) {
@@ -40,20 +43,47 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Transactional
     @Override
-    public SubscriptionDto subscribe(SubscriptionCreditRequest subscriptionCreditRequest) throws SubscriptionException {
+    public SubscriptionDto subscribe(SubscriptionCreditRequest request) throws SubscriptionException {
+        String lockKey = "lock:package:" + request.getPackageId();
+        String lockValue = UUID.randomUUID().toString();
+
+        int maxRetries = 3;
+        int retryIntervalMs = 5_000;
+        boolean locked = false;
+
+
         try {
-            log.info("Subscribing a package: {}", subscriptionCreditRequest);
-            PackageDto packageDto = packageClient.getPackage(subscriptionCreditRequest.getPackageId()).getData();
-            validateSubscriptionAvailability(packageDto, subscriptionCreditRequest.getUserId());
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                locked = redisLockService.acquireLock(lockKey, lockValue, 20_000);
+
+                if (locked) {
+                    log.info("Lock acquired for package {} subscription on attempt {}", request.getPackageId(), attempt);
+                    break;
+                }
+
+                log.info("Subscription for package {} is locked by other user, retrying {}/{}", request.getPackageId(), attempt, maxRetries);
+
+                Thread.sleep(retryIntervalMs);
+            }
+
+
+            if (!locked) {
+                throw new SubscriptionException(HttpStatus.CONFLICT, "Package is busy, please try again later.");
+            }
+
+            log.info("Subscribing a package: {}", request);
+            Thread.sleep(5000);
+            PackageDto packageDto = packageClient.getPackage(request.getPackageId()).getData();
+            validateSubscriptionAvailability(packageDto, request.getUserId());
             validateSubscriptionWindow(packageDto);
 
-            billingClient.debitFunds(new UserBalanceDebitRequest(subscriptionCreditRequest.getUserId(), packageDto.getPrice()));
+            billingClient.debitFunds(new UserBalanceDebitRequest(request.getUserId(), packageDto.getPrice()));
             packageClient.updatePackageSubscriberCount(new PackageSubscriberCountUpdateRequest(packageDto.getId(), packageDto.getPermittedCount() - 1));
 
             SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
                     .packageId(packageDto.getId())
                     .packageName(packageDto.getName())
-                    .userId(subscriptionCreditRequest.getUserId())
+                    .userId(request.getUserId())
                     .amount(packageDto.getPrice())
                     .status(SubscriptionStatus.ACTIVE)
                     .build();
@@ -62,6 +92,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         } catch (FeignException ex) {
             log.error("{}", ex.getMessage());
             throw new SubscriptionException(ex.status(), ex.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SubscriptionException(500, "Thread interrupted while waiting for package lock");
+        } finally {
+            redisLockService.releaseLock(lockKey, lockValue);
         }
     }
 
