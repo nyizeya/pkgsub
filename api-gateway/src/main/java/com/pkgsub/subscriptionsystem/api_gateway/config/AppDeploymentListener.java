@@ -15,8 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AppDeploymentListener implements ApplicationListener<ContextRefreshedEvent> {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -26,6 +26,16 @@ public class AppDeploymentListener implements ApplicationListener<ContextRefresh
             user.setUsername("admin");
             user.setEmail("admin@gmail.com");
             user.setRole(AppUserRole.ADMIN);
+            user.setPassword(passwordEncoder.encode("test1234"));
+            userRepository.save(user);
+        }
+
+        if (userRepository.findByUsername("user").isEmpty()) {
+            log.info("***** Creating user *****");
+            User user = new User();
+            user.setUsername("user");
+            user.setEmail("user@gmail.com");
+            user.setRole(AppUserRole.USER);
             user.setPassword(passwordEncoder.encode("test1234"));
             userRepository.save(user);
         }
